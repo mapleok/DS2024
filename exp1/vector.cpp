@@ -317,6 +317,19 @@ void Vector<T>::merge(Rank lo, Rank mi, Rank hi)
     delete[] B;
 }
 
+// 堆排序
+template <typename T>
+void Vector<T>::heapSort(Rank lo, Rank hi) {
+    Rank n = hi - lo;
+    for (Rank i = n / 2 - 1; i >= 0; i--) {
+        heapify(n, i);
+    }
+    for (Rank i = n - 1; i > 0; i--) {
+        swap(_elem[lo], _elem[lo + i]);
+        heapify(i, 0);
+    }
+}
+
 // 复数类
 class Complex
 {
