@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -164,6 +165,7 @@ Rank Vector<T>::find(T const &e, Rank lo, Rank hi) const
         ;
     return hi;
 }
+
 // 插入
 template <typename T>
 Rank Vector<T>::insert(Rank r, T const &e)
@@ -187,10 +189,10 @@ Vector<T> Vector<T>::rangeSearch(double m1, double m2) const
         double modulus = _elem[i].modulus();
         if (modulus >= m1 && modulus < m2)
         {
-            result.insert(result.size(), _elem[i]); // 将符合条件的元素插入结果向量
+            result.insert(result.size(), _elem[i]);
         }
     }
-    return result; // 返回查找结果
+    return result;
 }
 
 // 区间删除
@@ -287,7 +289,6 @@ void Vector<T>::mergeSort(Rank lo, Rank hi)
     merge(lo, mi, hi);
 }
 
-
 // 归并操作
 template <typename T>
 void Vector<T>::merge(Rank lo, Rank mi, Rank hi)
@@ -297,7 +298,6 @@ void Vector<T>::merge(Rank lo, Rank mi, Rank hi)
     {
         B[i] = _elem[lo + i];
     }
-
     Rank i = 0, j = mi, k = lo;
     while (i < mi - lo && j < hi)
     {
@@ -317,26 +317,12 @@ void Vector<T>::merge(Rank lo, Rank mi, Rank hi)
     delete[] B;
 }
 
-// 堆排序
-template <typename T>
-void Vector<T>::heapSort(Rank lo, Rank hi) {
-    Rank n = hi - lo;
-    for (Rank i = n / 2 - 1; i >= 0; i--) {
-        heapify(n, i);
-    }
-    for (Rank i = n - 1; i > 0; i--) {
-        swap(_elem[lo], _elem[lo + i]);
-        heapify(i, 0);
-    }
-}
-
 // 复数类
 class Complex
 {
 public:
     double real, imag;
     Complex(double r = 0, double i = 0) : real(r), imag(i) {}
-
     double modulus() const
     {
         return sqrt(real * real + imag * imag);
@@ -346,10 +332,26 @@ public:
     {
         return modulus() < other.modulus() || (modulus() == other.modulus() && real < other.real);
     }
-
+    bool operator>(const Complex &other) const
+    {
+        return other < *this;
+    }
+    bool operator==(const Complex &other) const
+    {
+        return real == other.real && imag == other.imag;
+    }
     bool operator!=(const Complex &other) const
     {
-        return real != other.real || imag != other.imag;
+        return !(*this == other);
+    }
+    bool operator<=(const Complex &other) const
+    {
+        return !(other < *this);
+    }
+
+    bool operator>=(const Complex &other) const
+    {
+        return !(*this < other);
     }
 
     friend ostream &operator<<(ostream &os, const Complex &c)
@@ -368,46 +370,45 @@ void print(const Complex &c)
 int main()
 {
     srand(static_cast<unsigned int>(time(0))); // 随机数种子
-
     // 创建无序向量
-    Vector<int> vec;
+    Vector<Complex> vec;
     for (int i = 0; i < 10; ++i)
     {
-        vec.insert(i, rand() % 10); // 插入随机数
+        vec.insert(i, Complex(rand() % 10, rand() % 10)); // 插入随机复数
     }
 
-    std::cout << "Original Vector: ";
+    cout << "Original Vector: ";
     vec.traverse(print);
-    std::cout << std::endl;
+    cout << endl;
 
     // 置乱
     vec.unsort();
-    std::cout << "Shuffled Vector: ";
+    cout << "Shuffled Vector: ";
     vec.traverse(print);
-    std::cout << std::endl;
+    cout << endl;
 
     // 查找
-    int toFind = 5;
+    Complex toFind(3, 4);
     Rank index = vec.find(toFind);
-    std::cout << "Find " << toFind << " at index: " << index << std::endl;
+    cout << "Find " << toFind << " at index: " << index << endl;
 
     // 插入
-    vec.insert(3, 20);
-    std::cout << "After Insertion: ";
+    vec.insert(3, Complex(5, 6));
+    cout << "After Insertion: ";
     vec.traverse(print);
-    std::cout << std::endl;
+    cout << endl;
 
     // 删除
-    vec.remove(2);
-    std::cout << "After Deletion: ";
+    vec.remove(vec.find(Complex(5, 6)));
+    cout << "After Deletion: ";
     vec.traverse(print);
-    std::cout << std::endl;
+    cout << endl;
 
     // 唯一化
     vec.uniquify();
-    std::cout << "After Uniquification: ";
+    cout << "After Uniquification: ";
     vec.traverse(print);
-    std::cout << std::endl;
+    cout << endl;
 
     // 测试不同的排序算法
 
@@ -415,19 +416,20 @@ int main()
 
     // 冒泡排序
     start = clock();
-    vec.bubbleSort(0, vec.size());
+    vec.bubbleSort(0, vec.size() - 1);
     end = clock();
-    std::cout << "Bubble Sort Time: " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " seconds." << std::endl;
+    cout << "Bubble Sort Time: " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
     // 归并排序
     start = clock();
-    vec.mergeSort(0, vec.size());
+    vec.mergeSort(0, vec.size() - 1);
     end = clock();
-    std::cout << "Merge Sort Time: " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " seconds." << std::endl;
+    cout << "Merge Sort Time: " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " seconds." << endl;
 
     Vector<Complex> result = vec.rangeSearch(1, 5);
     cout << "Range Search Result [1, 5): ";
     result.traverse(print);
     cout << endl;
+
     return 0;
 }
